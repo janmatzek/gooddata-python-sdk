@@ -10,6 +10,16 @@ from .backup_and_restore.models.storage import (
 )
 from .backup_and_restore.storage.local_storage import LocalStorage
 from .backup_and_restore.storage.s3_storage import S3Storage
+from .models.provisioning_input_schema import (
+    PermissionFullLoadSchema,
+    PermissionIncrementalLoadSchema,
+    UserFullLoadSchema,
+    UserGroupFullLoadSchema,
+    UserGroupIncrementalLoadSchema,
+    UserIncrementalLoadSchema,
+    WorkspaceFullLoadSchema,
+    WorkspaceIncrementalLoadSchema,
+)
 
 # -------- Provisioning --------
 from .provisioning.entities.user_data_filters.models.udf_models import (
@@ -55,5 +65,13 @@ __all__ = [
     "PermissionProvisioner",
     "UserDataFilterProvisioner",
     "UserDataFilterFullLoad",
+    "PermissionFullLoadSchema",
+    "PermissionIncrementalLoadSchema",
+    "UserFullLoadSchema",
+    "UserGroupFullLoadSchema",
+    "UserGroupIncrementalLoadSchema",
+    "UserIncrementalLoadSchema",
+    "WorkspaceFullLoadSchema",
+    "WorkspaceIncrementalLoadSchema",
     "__version__",
 ]

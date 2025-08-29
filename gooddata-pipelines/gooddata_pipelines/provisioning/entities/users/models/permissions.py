@@ -1,7 +1,7 @@
 # (C) 2025 GoodData Corporation
-from abc import abstractmethod
+
 from enum import Enum
-from typing import Any, Iterator, TypeAlias, TypeVar
+from typing import Iterator, TypeAlias
 
 import attrs
 from gooddata_sdk.catalog.identifier import CatalogAssigneeIdentifier
@@ -11,10 +11,14 @@ from gooddata_sdk.catalog.permission.declarative_model.permission import (
 )
 from pydantic import BaseModel
 
+from gooddata_pipelines.models.provisioning_input_schema import (
+    PermissionFullLoadSchema,
+    PermissionIncrementalLoadSchema,
+)
 from gooddata_pipelines.provisioning.utils.exceptions import BaseUserException
+from gooddata_pipelines.provisioning.utils.utils import ConstructorMixin
 
 TargetsPermissionDict: TypeAlias = dict[str, dict[str, bool]]
-ConstructorType = TypeVar("ConstructorType", bound="ConstructorMixin")
 
 
 class PermissionType(str, Enum):
@@ -23,73 +27,72 @@ class PermissionType(str, Enum):
     user_group = "userGroup"
 
 
-class ConstructorMixin:
+class BasePermission(BaseModel):
+    permission: str
+    workspace_id: str
+    id_: str
+    type_: PermissionType
+
     @staticmethod
-    def _get_id_and_type(
-        permission: dict[str, Any],
+    def get_id_and_type(
+        permission: PermissionFullLoadSchema | PermissionIncrementalLoadSchema,
     ) -> tuple[str, PermissionType]:
         user_id: str | None = permission.get("user_id")
-        user_group_id: str | None = permission.get("ug_id")
+        user_group_id: str | None = permission.get("user_group_id")
         if user_id and user_group_id:
-            raise ValueError("Only one of user_id or ug_id must be present")
+            raise ValueError(
+                "Only one of user_id or user_group_id must be present"
+            )
         elif user_id:
             return user_id, PermissionType.user
         elif user_group_id:
             return user_group_id, PermissionType.user_group
         else:
-            raise ValueError("Either user_id or ug_id must be present")
-
-    @classmethod
-    def from_list_of_dicts(
-        cls: type[ConstructorType], data: list[dict[str, Any]]
-    ) -> list[ConstructorType]:
-        """Creates a list of instances from list of dicts."""
-        # NOTE: We can use typing.Self for the return type in Python 3.11
-        permissions = []
-        for permission in data:
-            permissions.append(cls.from_dict(permission))
-        return permissions
-
-    @classmethod
-    @abstractmethod
-    def from_dict(cls, data: dict[str, Any]) -> Any:
-        """Construction form a dictionary to be implemented by subclasses."""
-        pass
+            raise ValueError("Either user_id or user_group_id must be present")
 
 
-class PermissionIncrementalLoad(BaseModel, ConstructorMixin):
-    permission: str
-    workspace_id: str
-    id_: str
-    type_: PermissionType
+class PermissionIncrementalLoad(
+    BasePermission, ConstructorMixin[PermissionIncrementalLoadSchema]
+):
+    """Input validator for incremental load of workspace permissions provisioning.
+
+    To validate the input, use the `from_list_of_dicts` method. The input should
+    be a list of dictionaries that match that match `gooddata_pipelines.models.provisioning_input_schema.PermissionIncrementalLoadSchema`.
+    """
+
     is_active: bool
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "PermissionIncrementalLoad":
+    def from_dict(
+        cls, data: PermissionIncrementalLoadSchema
+    ) -> "PermissionIncrementalLoad":
         """Returns an instance of PermissionIncrementalLoad from a dictionary."""
-        id_, target_type = cls._get_id_and_type(data)
+        id_, target_type = cls.get_id_and_type(data)
         return cls(
-            permission=data["ws_permissions"],
-            workspace_id=data["ws_id"],
+            permission=data["permission"],
+            workspace_id=data["workspace_id"],
             id_=id_,
             type_=target_type,
             is_active=data["is_active"],
         )
 
 
-class PermissionFullLoad(BaseModel, ConstructorMixin):
-    permission: str
-    workspace_id: str
-    id_: str
-    type_: PermissionType
+class PermissionFullLoad(
+    BasePermission, ConstructorMixin[PermissionFullLoadSchema]
+):
+    """Input validator for full load of workspace permissions provisioning.
+
+    To validate the input, use the `from_list_of_dicts` method. The input should
+    be a list of dictionaries that match that match `gooddata_pipelines.models.provisioning_input_schema.PermissionFullLoadSchema`.
+    """
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "PermissionFullLoad":
+    def from_dict(cls, data: PermissionFullLoadSchema) -> "PermissionFullLoad":
         """Returns an instance of PermissionFullLoad from a dictionary."""
-        id_, target_type = cls._get_id_and_type(data)
+        id_, target_type = cls.get_id_and_type(data)
         return cls(
-            permission=data["ws_permissions"],
-            workspace_id=data["ws_id"],
+            permission=data["permission"],
+            workspace_id=data["workspace_id"],
             id_=id_,
             type_=target_type,
         )

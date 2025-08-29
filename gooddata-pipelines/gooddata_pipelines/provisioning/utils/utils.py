@@ -2,8 +2,13 @@
 
 """Module for utilities used in GoodData Pipelines provisioning."""
 
-from pydantic import BaseModel
+from typing import Any, Generic, Mapping, Type, TypeVar
+
+import attrs
 from requests import Response
+
+ConstructorType = TypeVar("ConstructorType", bound="ConstructorMixin")
+InputTypedDict = TypeVar("InputTypedDict", bound=Mapping[str, Any])
 
 
 class AttributesMixin:
@@ -61,20 +66,43 @@ class AttributesMixin:
         return attrs
 
 
-class SplitMixin:
-    @staticmethod
-    def split(string_value: str, delimiter: str = ",") -> list[str]:
+class ConstructorMixin(Generic[InputTypedDict]):
+    @classmethod
+    def from_list_of_dicts(
+        cls: Type[ConstructorType], data: list[InputTypedDict] | Any
+    ) -> list[ConstructorType]:
+        """Creates a list of instances from list of dicts.
+
+        Allowed input structures are outlined in `gooddata_pipelines.models.provisioning_input_schema`.
         """
-        Splits a string by the given delimiter and returns a list of stripped values.
-        If the input is empty, returns an empty list.
+        # NOTE: We can use typing.Self for the return type in Python 3.11
+        if not data:
+            raise TypeError("Data is empty")
+
+        if not isinstance(data, list):
+            raise TypeError("Data is not a list")
+
+        if not all(isinstance(item, dict) for item in data):
+            raise TypeError("Data is not a list of dictionaries")
+
+        model_instances: list[ConstructorType] = []
+        for dictionary in data:
+            model_instances.append(cls.from_dict(dictionary))
+        return model_instances
+
+    @classmethod
+    def from_dict(
+        cls: Type[ConstructorType], data: InputTypedDict
+    ) -> ConstructorType:
+        """Returns an instance of WorkspaceIncrementalLoad from a dictionary.
+
+        Allowed input structures are outlined in `gooddata_pipelines.models.provisioning_input_schema`.
         """
-        if not string_value:
-            return []
-
-        return [value.strip() for value in string_value.split(delimiter)]
+        return cls(**data)
 
 
-class EntityGroupIds(BaseModel):
+@attrs.define
+class EntityGroupIds:
     ids_in_both_systems: set[str]
     ids_to_delete: set[str]
     ids_to_create: set[str]

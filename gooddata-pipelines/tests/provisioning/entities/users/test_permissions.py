@@ -149,9 +149,9 @@ def test_add_new_active_user_perm() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "MANAGE",
-            "ug_id": "",
+            "workspace_id": "",
+            "permission": "MANAGE",
+            "user_group_id": "",
             "user_id": "user_1",
             "is_active": True,
         }
@@ -170,9 +170,9 @@ def test_add_new_inactive_user_perm() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "MANAGE",
-            "ug_id": "",
+            "workspace_id": "",
+            "permission": "MANAGE",
+            "user_group_id": "",
             "user_id": "user_1",
             "is_active": False,
         }
@@ -192,9 +192,9 @@ def test_overwrite_inactive_user_perm() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "VIEW",
-            "ug_id": "",
+            "workspace_id": "",
+            "permission": "VIEW",
+            "user_group_id": "",
             "user_id": "user_1",
             "is_active": True,
         }
@@ -211,9 +211,9 @@ def test_overwrite_active_user_perm() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "ANALYZE",
-            "ug_id": "",
+            "workspace_id": "",
+            "permission": "ANALYZE",
+            "user_group_id": "",
             "user_id": "user_1",
             "is_active": False,
         }
@@ -230,9 +230,9 @@ def test_add_new_user_perm() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "VIEW",
-            "ug_id": "",
+            "workspace_id": "",
+            "permission": "VIEW",
+            "user_group_id": "",
             "user_id": "user_2",
             "is_active": True,
         }
@@ -252,9 +252,9 @@ def test_modify_one_of_user_perms() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "MANAGE",
-            "ug_id": "",
+            "workspace_id": "",
+            "permission": "MANAGE",
+            "user_group_id": "",
             "user_id": "user_1",
             "is_active": True,
         }
@@ -277,9 +277,9 @@ def test_add_new_active_ug_perm() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "MANAGE",
-            "ug_id": "ug_1",
+            "workspace_id": "",
+            "permission": "MANAGE",
+            "user_group_id": "ug_1",
             "user_id": "",
             "is_active": True,
         }
@@ -298,9 +298,9 @@ def test_add_new_inactive_ug_perm() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "MANAGE",
-            "ug_id": "ug_1",
+            "workspace_id": "",
+            "permission": "MANAGE",
+            "user_group_id": "ug_1",
             "user_id": "",
             "is_active": False,
         }
@@ -319,9 +319,9 @@ def test_overwrite_inactive_ug_perm() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "ANALYZE",
-            "ug_id": "ug_1",
+            "workspace_id": "",
+            "permission": "ANALYZE",
+            "user_group_id": "ug_1",
             "user_id": "",
             "is_active": True,
         }
@@ -338,9 +338,9 @@ def test_overwrite_active_ug_perm() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "VIEW",
-            "ug_id": "ug_1",
+            "workspace_id": "",
+            "permission": "VIEW",
+            "user_group_id": "ug_1",
             "user_id": "",
             "is_active": False,
         }
@@ -357,9 +357,9 @@ def test_add_new_ug_perm() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "VIEW",
-            "ug_id": "ug_2",
+            "workspace_id": "",
+            "permission": "VIEW",
+            "user_group_id": "ug_2",
             "user_id": "",
             "is_active": True,
         }
@@ -379,9 +379,9 @@ def test_modify_one_of_ug_perms() -> None:
     )
     permission = PermissionIncrementalLoad.from_dict(
         {
-            "ws_id": "",
-            "ws_permissions": "MANAGE",
-            "ug_id": "ug_1",
+            "workspace_id": "",
+            "permission": "MANAGE",
+            "user_group_id": "ug_1",
             "user_id": "",
             "is_active": True,
         }

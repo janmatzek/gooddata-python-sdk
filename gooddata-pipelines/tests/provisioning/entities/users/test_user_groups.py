@@ -6,6 +6,9 @@ from unittest import mock
 import pytest
 from gooddata_sdk.catalog.user.entity_model.user_group import CatalogUserGroup
 
+from gooddata_pipelines.models.provisioning_input_schema import (
+    UserGroupIncrementalLoadSchema,
+)
 from gooddata_pipelines.provisioning.entities.users.models.user_groups import (
     UserGroupIncrementalLoad,
 )
@@ -27,16 +30,16 @@ class MockUserGroup:
         )
 
 
-def test_from_csv_row_standard():
-    input = [
+def test_from_dict() -> None:
+    input_: list[UserGroupIncrementalLoadSchema] = [
         {
             "user_group_id": "ug_1",
             "user_group_name": "Admins",
-            "parent_user_groups": "ug_2|ug_3",
-            "is_active": "True",
+            "parent_user_groups": ["ug_2", "ug_3"],
+            "is_active": True,
         }
     ]
-    result = UserGroupIncrementalLoad.from_list_of_dicts(input, "|")
+    result = UserGroupIncrementalLoad.from_list_of_dicts(input_)
     expected = [
         UserGroupIncrementalLoad(
             user_group_id="ug_1",
@@ -48,16 +51,15 @@ def test_from_csv_row_standard():
     assert result == expected, "Standard row should be parsed correctly"
 
 
-def test_from_csv_row_no_parent_groups():
-    input = [
+def test_from_csv_row_no_parent_groups() -> None:
+    input_ = [
         {
             "user_group_id": "ug_2",
             "user_group_name": "Developers",
-            "parent_user_groups": "",
-            "is_active": "True",
+            "is_active": True,
         }
     ]
-    result = UserGroupIncrementalLoad.from_list_of_dicts(input, "|")
+    result = UserGroupIncrementalLoad.from_list_of_dicts(input_)
     expected = [
         UserGroupIncrementalLoad(
             user_group_id="ug_2",
@@ -71,16 +73,17 @@ def test_from_csv_row_no_parent_groups():
     )
 
 
-def test_from_csv_row_fallback_name():
-    input = [
+@pytest.mark.parametrize("invalid_name", [None, ""])
+def test_fallback_name(invalid_name) -> None:
+    input_: list[UserGroupIncrementalLoadSchema] = [
         {
             "user_group_id": "ug_3",
-            "user_group_name": "",
-            "parent_user_groups": "",
-            "is_active": "False",
+            "user_group_name": invalid_name,
+            "parent_user_groups": [],
+            "is_active": False,
         }
     ]
-    result = UserGroupIncrementalLoad.from_list_of_dicts(input, "|")
+    result = UserGroupIncrementalLoad.from_list_of_dicts(input_)
     expected = [
         UserGroupIncrementalLoad(
             user_group_id="ug_3",
@@ -94,17 +97,41 @@ def test_from_csv_row_fallback_name():
     )
 
 
-def test_from_csv_row_invalid_is_active():
-    input = [
+@pytest.mark.parametrize("empty_parent_groups", [None, "", []])
+def test_no_parent_user_groups(empty_parent_groups) -> None:
+    input_: list[UserGroupIncrementalLoadSchema] = [
+        {
+            "user_group_id": "ug_3",
+            "user_group_name": "ug_3",
+            "parent_user_groups": empty_parent_groups,
+            "is_active": False,
+        }
+    ]
+    result = UserGroupIncrementalLoad.from_list_of_dicts(input_)
+    expected = [
+        UserGroupIncrementalLoad(
+            user_group_id="ug_3",
+            user_group_name="ug_3",
+            parent_user_groups=[],
+            is_active=False,
+        )
+    ]
+    assert result == expected, (
+        "Row with empty parent user groups should be parsed correctly"
+    )
+
+
+def test_from_csv_row_invalid_is_active() -> None:
+    input_: list[UserGroupIncrementalLoadSchema] = [
         {
             "user_group_id": "ug_4",
             "user_group_name": "Testers",
-            "parent_user_groups": "ug_1",
-            "is_active": "not_a_boolean",
+            "parent_user_groups": ["ug_1"],
+            "is_active": "not_a_boolean",  # type: ignore
         }
     ]
     with pytest.raises(ValueError):
-        UserGroupIncrementalLoad.from_list_of_dicts(input, "|")
+        UserGroupIncrementalLoad.from_list_of_dicts(input_)
 
 
 def prepare_sdk():

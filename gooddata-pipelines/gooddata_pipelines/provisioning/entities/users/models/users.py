@@ -5,10 +5,16 @@ from typing import Any
 from gooddata_sdk.catalog.user.entity_model.user import CatalogUser
 from pydantic import BaseModel
 
-from gooddata_pipelines.provisioning.utils.utils import SplitMixin
+from gooddata_pipelines.models.provisioning_input_schema import (
+    UserFullLoadSchema,
+    UserIncrementalLoadSchema,
+)
+from gooddata_pipelines.provisioning.utils.utils import (
+    ConstructorMixin,
+)
 
 
-class BaseUser(BaseModel, SplitMixin):
+class BaseUser(BaseModel):
     """Base class containing shared user fields and functionality."""
 
     user_id: str
@@ -17,21 +23,7 @@ class BaseUser(BaseModel, SplitMixin):
     email: str | None
     auth_id: str | None
     user_groups: list[str]
-
-    @classmethod
-    def _create_from_dict_data(
-        cls, user_data: dict[str, Any], delimiter: str = ","
-    ) -> dict[str, Any]:
-        """Helper method to extract common data from dict."""
-        user_groups = cls.split(user_data["user_groups"], delimiter=delimiter)
-        return {
-            "user_id": user_data["user_id"],
-            "firstname": user_data["firstname"],
-            "lastname": user_data["lastname"],
-            "email": user_data["email"],
-            "auth_id": user_data["auth_id"],
-            "user_groups": user_groups,
-        }
+    # TODO: docstring
 
     @classmethod
     def _create_from_sdk_data(cls, obj: CatalogUser) -> dict[str, Any]:
@@ -68,22 +60,16 @@ class BaseUser(BaseModel, SplitMixin):
         )
 
 
-class UserIncrementalLoad(BaseUser):
-    """User model for incremental load operations with active status tracking."""
+class UserIncrementalLoad(
+    BaseUser, ConstructorMixin[UserIncrementalLoadSchema]
+):
+    """Input validator for incremental load of user provisioning.
+
+    To validate the input, use the `from_list_of_dicts` method. The input should
+    be a list of dictionaries that match that match `gooddata_pipelines.models.provisioning_input_schema.UserIncrementalLoadSchema`.
+    """
 
     is_active: bool
-
-    @classmethod
-    def from_list_of_dicts(
-        cls, data: list[dict[str, Any]], delimiter: str = ","
-    ) -> list["UserIncrementalLoad"]:
-        """Creates a list of User objects from list of dicts."""
-        converted_users = []
-        for user in data:
-            base_data = cls._create_from_dict_data(user, delimiter)
-            base_data["is_active"] = user["is_active"]
-            converted_users.append(cls(**base_data))
-        return converted_users
 
     @classmethod
     def from_sdk_obj(cls, obj: CatalogUser) -> "UserIncrementalLoad":
@@ -93,19 +79,12 @@ class UserIncrementalLoad(BaseUser):
         return cls(**base_data)
 
 
-class UserFullLoad(BaseUser):
-    """User model for full load operations."""
+class UserFullLoad(BaseUser, ConstructorMixin[UserFullLoadSchema]):
+    """Input validator for full load of user provisioning.
 
-    @classmethod
-    def from_list_of_dicts(
-        cls, data: list[dict[str, Any]], delimiter: str = ","
-    ) -> list["UserFullLoad"]:
-        """Creates a list of User objects from list of dicts."""
-        converted_users = []
-        for user in data:
-            base_data = cls._create_from_dict_data(user, delimiter)
-            converted_users.append(cls(**base_data))
-        return converted_users
+    To validate the input, use the `from_list_of_dicts` method. The input should
+    be a list of dictionaries that match that match `gooddata_pipelines.models.provisioning_input_schema.UserFullLoadSchema`.
+    """
 
     @classmethod
     def from_sdk_obj(cls, obj: CatalogUser) -> "UserFullLoad":
