@@ -25,7 +25,7 @@ pip install gooddata-pipelines
 
 
 ## Examples
-Here are a couple of introductory examples how to manage GoodData resources using Pipelines:
+Here are a couple of introductory examples how to manage GoodData resources using GoodData Pipelines:
 
 ### Provision Child Workspaces
 ```python
